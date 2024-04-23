@@ -2,7 +2,7 @@ import os, sys, argparse, py7zr
 from py7zr import SevenZipFile
 from py7zr.exceptions import PasswordRequired
 
-def decompress_7z(source_path, destination_path, password=None, subfolder=False):
+def decompress_7z(source_path, destination_path, password=None, subfolder=False, delete_original=False):
     if not subfolder:
         print("Subfolder option is disabled. Subfolders will not be processed.")
 
@@ -16,8 +16,9 @@ def decompress_7z(source_path, destination_path, password=None, subfolder=False)
                     z.extractall(path=destination_path)
                     print(f"Extraction of {file_path} completed successfully.")
                 
-                os.remove(file_path)
-                print(f"{filename} deleted successfully.")
+                if delete_original:  # Check if delete_original option is enabled
+                    os.remove(file_path)
+                    print(f"{filename} deleted successfully.")
             
             except PasswordRequired:
                 print(f"Password is required for extracting {file_path}")
@@ -32,6 +33,7 @@ def compress_7z(source_path, destination_path, password=None, subfolder=False, d
     # Traverse the directory and compress files only
     for root, _, files in os.walk(source_path):
         if subfolder or root == source_path:  # Check if subfolder processing is enabled or if it's the root directory
+            
             for file_name in files:
                 file_path = os.path.join(root, file_name)
                 
@@ -87,23 +89,29 @@ if __name__ == "__main__":
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    if args.decompress:
-        source_path = args.decompress
-        destination_path = args.output if args.output else source_path
-        password = args.password
-        subfolder = args.subfolder
-        decompress_7z(source_path, destination_path, password, subfolder)
-
-    elif args.compress:
+    if args.compress:
+        operation = 'compress'
         source_path = args.compress
-        destination_path = args.output if args.output else source_path
-        password = args.password
-        subfolder = args.subfolder
+    
+    elif args.decompress:
+        operation = 'decompress'
+        source_path = args.decompress
+    
+    else:
+        print("No job was defined.")
+        sys.exit(1)
 
+    destination_path = args.output if args.output else source_path
+    password = args.password
+    subfolder = args.subfolder
+    delete = args.delete_original
+
+    if operation == 'compress':
         if not password:
             print("Please specify a password for compression with -p or --password")
             sys.exit(1)
-
-        compress_7z(source_path, destination_path, password, subfolder, args.delete_original, args.header_encryption, args.algorithm)
-    else:
-        print("No job was defined.")
+        
+        compress_7z(source_path, destination_path, password, subfolder, delete, args.header_encryption, args.algorithm)
+    
+    elif operation == 'decompress':
+        decompress_7z(source_path, destination_path, password, subfolder, delete)
