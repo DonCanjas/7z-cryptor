@@ -51,7 +51,7 @@ def compress_7z(source_path, destination_path, password=None, subfolder=False, d
                     }
 
                     # Set compression filters based on the chosen algorithm
-                    filters = [{"id": filters_map.get(algorithm)}, {'id': FILTER_CRYPTO_AES256_SHA256}]
+                    filters = [{"id": filters_map.get(algorithm)}, {'id': py7zr.FILTER_CRYPTO_AES256_SHA256}]
 
                     with SevenZipFile(archive_name, mode='w', password=password, filters=filters, header_encryption=header_encryption) as z:
                         rel_path = os.path.relpath(file_path, source_path)
