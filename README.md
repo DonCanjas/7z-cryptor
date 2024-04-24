@@ -1,16 +1,23 @@
 ## 7z-cryptor
-Encrypts/Decrytps 7z files within a set path
-
+Encrypts/Decrytps 7z files within a set path.
+  
 ## Dependencies
-[py7zr](https://github.com/miurahr/py7zr)
-
+[py7zr](https://github.com/miurahr/py7zr) - 7z library  
+[PyCryptodomex](https://www.pycryptodome.org/en/latest/index.html) - 7zAES encryption  
+  
+Optional:  
+[PyZstd](https://pypi.org/project/pyzstd) - ZStandard compression  
+[PyPPMd](https://pypi.org/project/pyppmd) - PPMd compression  
+[Brotli](https://pypi.org/project/Brotli) - Brotli compression (CPython)  
+[BrotliCFFI](https://pypi.org/project/brotlicffi) - Brotli compression (PyPy)  
+  
 ## Usage
 ### Encrypt files
 ``7z-cryptor -c C:\Input\Path -o C:\Output\Path -p password``
 
 ### Decrypt files
 ``7z-cryptor -d C:\Input\Path -o C:\Output\Path -p password``
-
+  
 ## Argument Explanation
 *-d*, *--decompress*: Path to input files to be decompressed. If no path is set, defaults to current dir.  
 
