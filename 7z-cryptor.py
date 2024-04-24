@@ -2,9 +2,15 @@ import os, sys, argparse, py7zr
 from py7zr import SevenZipFile
 from py7zr.exceptions import PasswordRequired
 
-def decompress_7z(source_path, destination_path, password=None, subfolder=False, delete_original=False):
+def decompress_7z(source_path, destination_path, password=None, subfolder=False, delete_original=False, folder_mode='none'):
     if not subfolder:
         print("Subfolder option is disabled. Subfolders will not be processed.")
+
+    if folder_mode == 'single':
+        extract_path = os.path.join(destination_path, '7z-cryptor_extracted')
+        os.makedirs(extract_path, exist_ok=True)
+    else:
+        extract_path = destination_path
 
     # Iterate over files in the source directory
     for filename in os.listdir(source_path):
@@ -13,7 +19,12 @@ def decompress_7z(source_path, destination_path, password=None, subfolder=False,
         if os.path.isfile(file_path) and filename.endswith('.7z'):
             try:
                 with SevenZipFile(file_path, mode='r', password=password) as z:
-                    z.extractall(path=destination_path)
+                    if folder_mode == 'multi':
+                        extract_folder = os.path.splitext(file_path)[0]
+                        os.makedirs(extract_folder, exist_ok=True)
+                        z.extractall(path=extract_folder)
+                    else:
+                        z.extractall(path=extract_path)
                     print(f"Extraction of {file_path} completed successfully.")
                 
                 if delete_original:  # Check if delete_original option is enabled
@@ -80,8 +91,11 @@ if __name__ == "__main__":
     parser.add_argument('-sub', '--subfolder', action='store_true', help='Process subfolders (default: disabled)')
     parser.add_argument('-del', '--delete', dest='delete_original', action='store_true', help='Delete original files after encryption/decryption (default: disabled)')
     parser.add_argument('-no-he', '--no-header-encryption', dest='header_encryption', action='store_false', help='Disable header encryption')
-    parser.add_argument('-algo', '--algorithm', metavar='ALGORITHM', choices=['COPY', 'LZMA2', 'LZMA', 'Bzip2', 'Deflate', 'PPMd', 'ZStandard', 'Brotli'], default='COPY', 
-    help='Compression algorithm (default: COPY). Available alorithms: COPY, LZMA2, LZMA, Bzip2, Deflate, PPMd (depend on pyppmd), ZStandard (depend on pyzstd), Brotli (depend on brotli, brotliCFFI)')
+    parser.add_argument('-algo', '--algorithm', choices=['COPY', 'LZMA2', 'LZMA', 'Bzip2', 'Deflate', 'PPMd', 'ZStandard', 'Brotli'], default='COPY', 
+    help='Compression algorithm (default: COPY). Available algorithms: COPY, LZMA2, LZMA, Bzip2, Deflate, PPMd (depends on pyppmd), ZStandard (depends on pyzstd), Brotli (depends on brotli, brotliCFFI)')
+    # Change -f file to multi and -f all to single
+    parser.add_argument('-f', '--folder', choices=['none', 'single', 'multi'], default='none', help='Folder mode for decompression (default: none). "single" creates a single folder for all extracted files, "multi" creates a folder for each file.')
+
     args = parser.parse_args()
 
     if len(sys.argv)==1:
@@ -105,6 +119,7 @@ if __name__ == "__main__":
     password = args.password
     subfolder = args.subfolder
     delete = args.delete_original
+    folder_mode = args.folder
 
     if operation == 'compress':
         if not password:
@@ -114,4 +129,5 @@ if __name__ == "__main__":
         compress_7z(source_path, destination_path, password, subfolder, delete, args.header_encryption, args.algorithm)
     
     elif operation == 'decompress':
-        decompress_7z(source_path, destination_path, password, subfolder, delete)
+        decompress_7z(source_path, destination_path, password, subfolder, delete, folder_mode)
+
