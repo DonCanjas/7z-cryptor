@@ -13,10 +13,10 @@ Optional:
   
 ## Usage
 ### Encrypt files
-``7z-cryptor -c C:\Input\Path -o C:\Output\Path -p password``
+``python 7z-cryptor -c C:\Input\Path -o C:\Output\Path -p password``
 
 ### Decrypt files
-``7z-cryptor -d C:\Input\Path -o C:\Output\Path -p password``
+``python 7z-cryptor -d C:\Input\Path -o C:\Output\Path -p password``
   
 ## Argument Explanation
 *-d*, *--decompress*: Path to input files to be decompressed. If no path is set, defaults to current dir.  
